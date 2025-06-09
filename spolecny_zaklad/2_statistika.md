@@ -401,5 +401,184 @@ $$
         - vysvětlíme $80\%$ rozptylu, tedy $\sum_{i=1}^r \lambda_i \geq 0.8 \cdot Tr(\Sigma)$
         - bereme komponenty, které mají "nadprůměrný" rozptyl (Kaiserovo pravidlo), tj. $\lambda_1 \geq \lambda_2 \geq \ldots \lambda_r \geq Tr(\Sigma)/l$
 5. získáme nové souřadnice $A^*=XU^*$
+6. 
+
+# 2. Statistika
+
+*poznámky vytvořeny na základě přednášek a prezentací Ondřeje Pokory z roku 2022*
+
+> Důkladná znalost základních statististických metod ([bodové odhady](#bodové-odhady), [intervaly spolehlivosti](#intervaly-spolehlivosti-confidence-intervals-ci), [testování statistických hypotéz](#statistické-testy)). [ANOVA](#anova-analysis-of-variance). [Neparametrické testy hypotéz.](#neparametrické-testy) [Mnohonásobná lineární regrese](#mnohonásobná-lineární-regrese), [autokorelace](#autokorelace), [multikolinearita](#multikolinearita). [Analýza hlavních komponent (PCA).](#pca) (MA012)
+
+## Úvod
+
+### Proč statistika?
+
+- deskriptivní (popisná) statistika
+    - o daném jevu nic nevím, chci popsat získaná data
+    - například "jaký je náš průměrný věk" – každý mi řekne věk, spočítám průměr
+- inferenční statistika
+    - testování hypotéz, zobecňování zjištění na populaci
+        - populace – celá množina, která nás zajímá (př. všichni lidé)
+        - vzorek, reprezentativní vzorek – podmnožina, kterou testuji
+
+### Hypotézy
+
+- vždy, když chci ve statistice něco tvrdit, tak buď je to nějaký popis (průměr je X), nebo musím mít hypotézu
+- hypotézy nelze potvrzovat, pouze zamítat
+- **nulová hypotéza $H_0$** – nic se neděje, normální stav
+    - to chci zamítnout
+- **alternativní hypotéza $H_A$** – změna, to je to, co chci tvrdit
+- $H_0$ a $H_A$ vždy komplementární, jedna z nich musí platit!
+
+### P-hodnota
+
+- pravděpodobnost, že pozorujete výsledky, které pozorujete (nebo extrémnější), za předpokladu, že nulová hypotéza platí
+- p-hodnota pouze pomůže rozhodnout, jestli zamítáme nebo ne, žádným způsobem neměří "jak moc" je efekt významný
+- nezamítnutí $H_0$ neznamená, že $H_0$ je pravdivá!
+- pozor, p-hodnota není pravděpodobnost $H_0$, ani pravděpodobnost, že neplatí $H_A$
+
+### Hladina významnosti a chyby I. a II. typu
+
+![Chyby I. a II. typu](../obrazky/power.png)
+
+- **hladina významnosti $\alpha$**
+    - pravděpodobnost, že $H_0$ zamítáme, i když ve skutečnosti platí
+- chyba I. typu, falešná pozitivita
+    - pravděpodobnost, že $H_0$ zamítáme, i když ve skutečnosti platí
+    - pravděpodobnost $\alpha$, můžeme si zvolit, vyšší s vyšším $\alpha$
+- chyba II. typu, falešná negativita
+    - pravděpodobnost, že $H_0$ nezamítáme, i když ve skutečnosti neplatí
+    - pravděpodobnost jen odhadnutá, závisí na testu, počtu měření (čím víc tím menší), snižuje se s vyšším $\alpha$
+- jak zvolit $\alpha$? 
+    - příklad: testuji, zda má pacient nějakou nemoc a mám zahájit léčbu
+        - $H_0$ zdravý pacient, $H_A$ nemocný pacient
+        - možnost 1: léčba je zdarma a neinvazivní, stačí každé ráno vypít sklenici džusu, pokud ale nezačnu s léčbou včas, tak to může dopadnout špatně
+            - nevadí, když občas řeknu i někomu, kdo nemoc nemá, že ji má, protože pití džusu nemůže uškodit
+            - nevadí mi tolik chyby I. typu, chci se vyvyrovat chyb II. typu (nediagnostikuji někoho, kdo nemoc má)
+            - volím vyšší hladinu významnosti
+        - možnost 2: léčba je velmi nákladná, má ošklivé vedlejší účinky, nemoc je vážná a vyslechnutí diagnózy bude mít dramatický vliv na pacientovu psychickou pohodu, nemoc nepostupuje příliš rychle
+            - chci se vyhnout chybě I. typu (neříkám zbytečně lidem, že tuhle nemoc mají)
+            - volím nižší hladinu významnosti
+        - v reálném světě složitější, než tento příklad    
+    - typicky se používá 5 % nebo 1 % (v medicíně), ale je to určeno vlastně náhodně, konvence, není důvod, proč by 5 % mělo být lepší než 4 %
+
+## Statistické testy
+
+- matematický nástroj, který nám pomůže určit, jestli na hladině významnosti $\alpha$ a při pozorování daných dat zamítáme $H_0$
+
+### Postup
+
+*Chceme získat znalost o nějaké vlastnosti světa, tedy pravděpodobnostní distribuce, ze které pochází data.*
+
+1. rozmyslíme **hypotézy** a model světa  
+2. vybereme vhodnou **testovou statistiku**  
+    - *číslo, které popisuje data*  
+    - důležité je, že víme, jaké rozdělení pravděpodobnosti bude tahle testová statistika mít, pokud platí $H_0$  
+        - př. průměr se bude pro hodně měření blížit střední hodnotě  
+3. zvolíme **hladinu významnosti** $\alpha$  
+4. spočítáme **hodnotu testové statistiky** pro naše data  
+    - tj. pokud je naše testová statistika výběrový průměr, spočítáme průměr  
+
+- **teď známe rozdělení pravděpodobnosti testové statistiky, pokud platí $H_0$, a její konkrétní hodnotu pro naše data**  
+5. spočítáme **p-hodnotu** – pravděpodobnost, že pozoruji danou hodnotu testové statistiky za předpokladu, že platí $H_0$  
+    - můžu najít v tabulkách  
+6. **zamítneme** $H_0$ ve prospěch $H_A$, pokud $p<\alpha$  
+
+### Předpoklady
+
+- statistické testy mají předpoklady  
+- předtím, než se pustíme do testování, musíme jeho **předpoklady ověřit**  
+    - jinak si třeba budeme myslet, že víme, jaké rozdělení pravděpodobnosti má naše testová statistika, ale nebude to pravda  
+
+## Bodové odhady
+
+- <https://bookdown.org/egarpor/inference/point.html>  
+- <https://portal.matematickabiologie.cz/index.php?pg=analyza-a-hodnoceni-biologickych-dat--statisticke-modelovani--zakladni-pojmy-matematicke-statistiky--bodove-odhady>  
+- chceme odhadnout jeden číselný parametr distribuce, ze které pocházejí data, na základě vzorku dat  
+    - př. střední hodnota, rozptyl  
+- odhadujeme pomocí výběrové charakteristiky (= funkce náhodného výběru)  
+- odhadovaný parametr $\theta$, odhad $\hat{\theta}$  
+
+### Vlastnosti bodových odhadů
+
+- **nestrannost (bias)**  
+    - odhad je nestranný, pokud $\mathbb{E}(\hat{\theta})=\theta$  
+        - alternativně, $Bias[\hat{\theta}]= \mathbb{E}(\hat{\theta})-\theta=0$  
+    - asymptoticky nestranný: $\lim_{n \to \infty}\mathbb{E}(\hat{\theta})=\theta$  
+- **vydatnost (eficience)**  
+    - mezi nestrannými odhady volíme ten s nejmenším rozptylem  
+- **konzistence**  
+    - asymptoticky nestranný a $\lim_{n \to \infty}var(\hat{\theta})=0$  
+- **dostatečnost**  
+    - odhaduje veškerou informaci o $\theta$ z výběru  
+- výběrová chyba $(\hat{\theta}-\theta)$  
+
+### Příklady bodových odhadů
+
+- střední hodnotu (expected value)  
+  $$\mathbb{E}[X]=\sum_x x\cdot P(X=x) = \int_{-\infty}^{\infty} x\cdot f(x)\,dx$$  
+  odhadujeme pomocí **výběrového průměru**  
+  $$\overline{X} = \frac{1}{n}\sum_{i=1}^n X_i$$
+- rozptyl (variance)  
+  $$\begin{aligned}
+  var(X) &= \mathbb{E}[(X-\mathbb{E}[X])^2] = \mathbb{E}[X^2]-(\mathbb{E}[X])^2 \\
+         &= \sum_x (x-\mathbb{E}[X])^2\cdot P(X=x) \\
+         &= \int_{-\infty}^{\infty} (x-\mathbb{E}[X])^2 \cdot f(x)\,dx
+  \end{aligned}$$  
+  odhadujeme pomocí **výběrového rozptylu**  
+  $$S_X^2= \frac{1}{n-1}\sum_{i=1}^n (X_i-\overline{X})^2$$
+- směrodatnou odchylku (standard deviation)  
+  $$\sigma_X=\sqrt{var(X)}$$  
+  odhadujeme pomocí **výběrové směrodatné odchylky**  
+  $$S_X=\sqrt{S_X^2}$$
+
+### Intervaly spolehlivosti (confidence intervals, CI)
+
+- intervalový odhad = parametr aproximujeme intervalem, v němž s velkou pravděpodobností parametr leží  
+- může být jednostranný nebo dvoustranný  
+- <https://bookdown.org/egarpor/inference/confint.html>  
+- hladina spolehlivosti: $1-\alpha$  
+- definice:  
+  $$CI_{1-\alpha}(\theta)=[T_{inferior}(x_1,\ldots,x_n),T_{superior}(x_1,\ldots,x_n)]$$  
+  kde  
+  $$P(T_{inferior}\leq \theta \leq T_{superior})\geq 1-\alpha$$  
+- bootstraping  
+
+#### Příklad: normální CI pro střední hodnotu
+
+- známý rozptyl $\sigma^2$  
+- $$\overline{X}\to N\!\Bigl(\mu,\frac{\sigma^2}{n}\Bigr)$$  
+- $$Z = \frac{\overline{X}-\mu}{\sigma/\sqrt{n}}$$  
+- $$P\bigl(z_{\alpha/2}<Z<z_{1-\alpha/2}\bigr)=1-\alpha$$  
+- oboustranný interval:  
+  $$P\Bigl(\overline{X}-\frac{\sigma}{\sqrt{n}}z_{\alpha/2}<\mu<\overline{X}+\frac{\sigma}{\sqrt{n}}z_{1-\alpha/2}\Bigr)=1-\alpha$$
+
+## t-test
+
+… *(zbytek beze změny, ponechte všechny bloky $$…$$ a inline $…$ tak, jak máte)* …
+
+## ANOVA (ANalysis Of VAriance)
+
+… *(pokračujte stejným stylem).* …
+
+## Neparametrické testy
+
+…  
+
+## Mnohonásobná lineární regrese
+
+…  
+
+## Autokorelace
+
+…  
+
+## Multikolinearita
+
+…  
+
+## PCA
+
+…  
 
 
